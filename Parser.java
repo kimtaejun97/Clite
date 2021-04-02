@@ -109,7 +109,9 @@ public class Parser {
         if(token.type().equals(TokenType.Semicolon))
             s = new Skip(); //semicolon
         else if(token.type().equals(TokenType.LeftBrace)){
-            s = block();
+            match(TokenType.LeftBrace);
+            s = statements();
+            match(TokenType.RightBrace);
         }
         else if(token.type().equals(TokenType.Identifier)){
             s = assignment();
@@ -131,26 +133,26 @@ public class Parser {
         // Block --> '{' Statements '}'
         Block b = new Block();
         Statement s;
-        while(!token.type().equals(TokenType.RightBrace) && !token.type().equals(TokenType.Eof)){
+        while(!token.type().equals(TokenType.RightBrace)){
             s = statement();
             b.members.add(s);
         }
         // student exercise
         return b;
     }
-    private Block block(){
-        // Block --> '{' Statements '}'
-        Block b = new Block();
-        Statement s;
-        match(TokenType.LeftBrace);
-        while(token.type() !=TokenType.RightBrace){
-            s = statement();
-            b.members.add(s);
-        }
-        match(TokenType.RightBrace);
-        // student exercise
-        return b;
-    }
+
+//    private Block block(){
+//        // Block --> '{' Statements '}'
+//        Block b = new Block();
+//        Statement s;
+//        match(TokenType.LeftBrace);
+//        while(token.type() !=TokenType.RightBrace){
+//            s = statement();
+//            b.members.add(s);
+//        }
+//        match(TokenType.RightBrace);
+//        return b;
+//    }
   
     private Assignment assignment () {
         // Assignment --> Identifier = Expression ;
