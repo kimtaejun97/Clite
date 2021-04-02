@@ -52,23 +52,21 @@ public class Lexer {
     public Token next( ) { // Return next token
         do {
             if (isLetter(ch)) { // ident or keyword
-                char c = nextChar();
-                if (ch == 'e' && isDigit(c)) {
-                    ch = c;
-                    return Token.eTok;
-                }
-                else if (ch == 'e' && c=='-'){
-                    ch=nextChar();
-                    return Token.emTok;
-                }
-                col--;
                 String spelling = concat(letters + digits);
                 return Token.keyword(spelling);
             } else if (isDigit(ch)) { // int or float literal
                 String number = concat(digits);
+                if(ch == 'e') {
+                    String sn = scientificNotation();
+                    number += sn;
+                    if(sn!="")
+                        return Token.mkFloatLiteral(number);
+                }
                 if (ch != '.')  // int Literal
                     return Token.mkIntLiteral(number);
                 number += concat(digits);
+                if(ch =='e')
+                    number += scientificNotation();
                 return Token.mkFloatLiteral(number);
             } else switch (ch) {
             case ' ': case '\t': case '\r': case eolnCh:
@@ -174,6 +172,28 @@ public class Lexer {
         System.err.print(line);
         System.err.println("Error: column " + col + " " + msg);
         System.exit(1);
+    }
+
+    public String scientificNotation () {
+        String number = "";
+
+        char c = nextChar();
+        if (isDigit(c)) {
+            col--;
+            number += concat(digits);
+        }
+        else if (c == '-') {
+            col--;
+            number += concat(digits + '-');
+        }
+        else if(c == '+'){
+            col--;
+            number += concat(digits +'+');
+        }
+        else
+            col--;
+
+        return number;
     }
 
     static public void main ( String[] argv ) {
