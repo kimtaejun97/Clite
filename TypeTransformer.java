@@ -24,8 +24,12 @@ public class TypeTransformer {
                 return new Binary(b.op.floatMap(b.op.val), t1,t2);
             else if (typ1 == Type.CHAR) 
                 return new Binary(b.op.charMap(b.op.val), t1,t2);
-            else if (typ1 == Type.BOOL) 
+            else if (typ1 == Type.BOOL){
+                Operator bop =b.op.boolMap(b.op.val);
+                if (bop ==null)
+                    return new Binary(new Operator(b.op.val), t1, t2);
                 return new Binary(b.op.boolMap(b.op.val), t1,t2);
+            }
             throw new IllegalArgumentException("should never reach here");
         }
         // student exercise
