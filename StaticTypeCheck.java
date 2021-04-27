@@ -108,6 +108,13 @@ public class StaticTypeCheck {
             }
             return ;
         }
+        else if(e instanceof GetInt){
+            return ;
+        }
+        else if(e instanceof GetFloat){
+            return ;
+        }
+
         throw new IllegalArgumentException("should never reach here");
     }
 
@@ -168,6 +175,11 @@ public class StaticTypeCheck {
                 return ;
             }
 
+        }
+        else if (s instanceof Put){
+            Put p =(Put)s;
+            V(p.exp,tm);
+            return ;
         }
         throw new IllegalArgumentException("should never reach here");
     }

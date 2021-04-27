@@ -111,6 +111,17 @@ class Assignment extends Statement {
 
 }
 
+class Put extends Statement{
+    Expression exp;
+
+    Put(Expression e){
+        this.exp = e;
+    }
+    public void display(int i){
+        exp.display(i);
+    }
+}
+
 class Conditional extends Statement {
 // Conditional = Expression test; Statement thenbranch, elsebranch
     Expression test;
@@ -220,6 +231,14 @@ abstract class Value extends Expression {
         if (type == Type.FLOAT) return new FloatValue( );
         throw new IllegalArgumentException("Illegal type in mkValue");
     }
+}
+
+class GetInt extends Expression{
+
+}
+
+class GetFloat extends Expression{
+
 }
 
 class IntValue extends Value {

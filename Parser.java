@@ -122,6 +122,9 @@ public class Parser {
         else if(token.type().equals(TokenType.While)){
             s= whileStatement();
         }
+        else if(token.type().equals(TokenType.Put)){
+            s =putStatement();
+        }
         else{
             error(token.type());
         }
@@ -162,6 +165,16 @@ public class Parser {
         match(TokenType.Semicolon);
 
         return new Assignment(t,e);  // student exercise
+    }
+
+    private Put putStatement(){
+        //putStatement --> put( Expression ) ;
+        match(TokenType.Put);
+        match(TokenType.LeftParen);
+        Expression e = expression();
+        match(TokenType.RightParen);
+
+        return new Put(e);
     }
   
     private Conditional ifStatement () {
@@ -289,6 +302,24 @@ public class Parser {
         } else error("Identifier | Literal | ( | Type");
         return e;
     }
+
+    private Expression getInt(){
+        match(TokenType.getInt);
+        match(TokenType.LeftParen);
+        match(TokenType.RightParen);
+
+        return new GetInt();
+    }
+
+    private Expression getFloat(){
+        match(TokenType.getFloat);
+        match(TokenType.LeftParen);
+        match(TokenType.RightParen);
+
+        return new GetFloat();
+    }
+
+
 
     private Value literal( ) {
         Value v=null;

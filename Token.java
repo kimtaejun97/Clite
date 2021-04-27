@@ -18,6 +18,9 @@ public class Token{
     public static final Token mainTok = new Token(TokenType.Main, "main");
     public static final Token trueTok = new Token(TokenType.True, "true");
     public static final Token whileTok = new Token(TokenType.While, "while");
+    public static final Token putTok = new Token(TokenType.Put,"put");
+    public static final Token gIntTok = new Token(TokenType.getInt,"getInt");
+    public static final Token gFloatTok = new Token(TokenType.getInt,"getFloat");
     public static final Token leftBraceTok = new Token(TokenType.LeftBrace, "{");
     public static final Token rightBraceTok = new Token(TokenType.RightBrace, "}");
     public static final Token leftBracketTok = new Token(TokenType.LeftBracket, "[");
