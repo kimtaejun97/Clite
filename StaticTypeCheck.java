@@ -93,6 +93,21 @@ public class StaticTypeCheck {
             return;
         }
         // student exercise
+        else if(e instanceof Unary){
+            Unary u = (Unary)e;
+            Type t =  typeOf(u.term, tm);
+            V(u.term, tm);
+            if(u.op.NotOp()){
+                check(t ==Type.BOOL, "type error :: NotOp "+u.op);
+            }
+            else if(u.op.NegateOp()){
+                check(t==Type.INT || t==Type.FLOAT,"type error :: NegateOp"+u.op);
+            }
+            else{
+                throw new IllegalArgumentException("should never reach here");
+            }
+            return ;
+        }
         throw new IllegalArgumentException("should never reach here");
     }
 
@@ -120,18 +135,51 @@ public class StaticTypeCheck {
             }
             return;
         } 
-        // student exercise
+        // student exercise IF,LOOP, BLOCK
+        else if(s instanceof Conditional){
+            Conditional c = (Conditional) s;
+            V(c.test,tm);
+            Type tType = typeOf(c.test, tm);
+            if(tType == Type.BOOL){
+                V(c.thenbranch, tm);
+                V(c.elsebranch, tm);
+                return ;
+            }
+            else{
+                check(false, "type error :: Conditional "+c.test);
+            }
+        }
+        else if(s instanceof Loop){
+            Loop l =(Loop) s;
+            V(l.test, tm);
+            Type tType = typeOf(l.test,tm);
+            if(tType ==Type.BOOL){
+                V(l.body, tm);
+                return ;
+            }
+            else{
+                check(false, "type error ::Loop "+l.test);
+            }
+        }
+        else if(s instanceof Block){
+            Block b = (Block) s;
+            for(Statement si : b.members){
+                V(si, tm);
+                return ;
+            }
+
+        }
         throw new IllegalArgumentException("should never reach here");
     }
 
     public static void main(String args[]) {
         Parser parser  = new Parser(new Lexer(args[0]));
         Program prog = parser.program();
-        // prog.display();           // student exercise
+        prog.display();           // student exercise
         System.out.println("\nBegin type checking...");
         System.out.println("Type map:");
         TypeMap map = typing(prog.decpart);
-        // map.display();   // student exercise
+        map.display();   // student exercise
         V(prog);
     } //main
 

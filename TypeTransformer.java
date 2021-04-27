@@ -19,7 +19,7 @@ public class TypeTransformer {
             Expression t1 = T (b.term1, tm);
             Expression t2 = T (b.term2, tm);
             if (typ1 == Type.INT) 
-                return new Binary(b.op.intMap(b.op.val), t1,t2);
+                return new Binary(b.op.intMap(b.op.val), t1,t2); // + ->INT+
             else if (typ1 == Type.FLOAT) 
                 return new Binary(b.op.floatMap(b.op.val), t1,t2);
             else if (typ1 == Type.CHAR) 
@@ -29,6 +29,24 @@ public class TypeTransformer {
             throw new IllegalArgumentException("should never reach here");
         }
         // student exercise
+        if(e instanceof Unary){
+            Unary u =(Unary) e;
+            Type typ = StaticTypeCheck.typeOf(u.term, tm);
+            Expression t =T(u.term, tm);
+
+            if(typ ==Type.BOOL && u.op.NotOp()){
+                return new Unary(u.op.boolMap(u.op.val),t);
+            }
+            else if(typ ==Type.INT && u.op.NegateOp()){
+                return new Unary(u.op.intMap(u.op.val),t);
+            }
+            else if(typ ==Type.FLOAT && u.op.NegateOp()){
+                return new Unary(u.op.floatMap(u.op.val),t);
+            }
+            else{
+                throw new IllegalArgumentException("type error ::Unary");
+            }
+        }
         throw new IllegalArgumentException("should never reach here");
     }
 
@@ -83,15 +101,15 @@ public class TypeTransformer {
     public static void main(String args[]) {
         Parser parser  = new Parser(new Lexer(args[0]));
         Program prog = parser.program();
-        // prog.display();           // student exercise
+        prog.display();           // student exercise
         System.out.println("\nBegin type checking...");
         System.out.println("Type map:");
         TypeMap map = StaticTypeCheck.typing(prog.decpart);
-        // map.display();    // student exercise
+        map.display();    // student exercise
         StaticTypeCheck.V(prog);
         Program out = T(prog, map);
         System.out.println("Output AST");
-        // out.display();    // student exercise
+        out.display();    // student exercise
     } //main
 
     } // class TypeTransformer
