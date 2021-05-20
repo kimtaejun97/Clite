@@ -1,6 +1,7 @@
 // Abstract syntax for the language C++Lite,
 // exactly as it appears in Appendix B.
 
+import java.awt.dnd.InvalidDnDOperationException;
 import java.util.*;
 
 class Program {
@@ -123,7 +124,7 @@ class Put extends Statement{
 }
 
 class Conditional extends Statement {
-// Conditional = Expression test; Statement thenbranch, elsebranch
+// Conditional = Expression test; Statement thenbranch, elsebranch,
     Expression test;
     Statement thenbranch, elsebranch;
     // elsebranch == null means "if... then"
@@ -165,8 +166,8 @@ class Loop extends Statement {
     
 }
 
-abstract class Expression {
-    // Expression = Variable | Value | Binary | Unary
+abstract class Expression extends  Statement{
+    // Expression = Variable | Value | Binary | Unary, Call
     public void display(int k) {
     }
 }
@@ -185,6 +186,9 @@ class Variable extends Expression {
     }
     
     public int hashCode ( ) { return id.hashCode( ); }
+    public String id(){
+        return id;
+    }
     public void display(int i) {
         for (int j = 0; j < i; ++j) {
             System.out.print("\t");
@@ -230,6 +234,36 @@ abstract class Value extends Expression {
         if (type == Type.CHAR) return new CharValue( );
         if (type == Type.FLOAT) return new FloatValue( );
         throw new IllegalArgumentException("Illegal type in mkValue");
+    }
+}
+
+class Call extends Expression{
+    public String name;
+    public Expressions args;
+
+    public Call(){}
+    public Call(String name, Expressions args){
+        this.name = name;
+        this.args = args;
+    }
+
+    public String name(){
+        return name;
+    }
+    public void display (int level){
+        Indenter indenter = new Indenter(level);
+        indenter.display(getClass().toString().substring(6) + " : "+name);
+        indenter.display("  args = ");
+        if(args !=null)
+            args.display(level+1);
+    }
+
+}
+
+class Expressions extends ArrayList<Expression>{
+    public void display(int level){
+        for(Expression e : this)
+            e.display(level+1);
     }
 }
 
@@ -544,5 +578,20 @@ class Operator {
 
     public void display(int i) {
         System.out.println(val);
+    }
+}
+
+class Indenter{
+    private int level;
+    public Indenter(int nextLevel){
+        this.level = nextLevel;
+    }
+
+    public void display(String msg){
+        System.out.println();
+        for(int i=0; i<level; i++){
+            System.out.print("  ");
+        }
+        System.out.println(msg);
     }
 }

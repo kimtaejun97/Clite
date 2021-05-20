@@ -104,7 +104,7 @@ public class Parser {
     }
   
     private Statement statement() {
-        // Statement --> ; | Block | Assignment | IfStatement | WhileStatement
+        // Statement --> ; | Block | Assignment | IfStatement | WhileStatement | Call
         Statement s=null;
         if(token.type().equals(TokenType.Semicolon))
             s = new Skip(); //semicolon
@@ -114,16 +114,13 @@ public class Parser {
             match(TokenType.RightBrace);
         }
         else if(token.type().equals(TokenType.Identifier)){
-            s = assignment();
+            s = assignmentOrCall();
         }
         else if(token.type().equals(TokenType.If)){
             s= ifStatement();
         }
         else if(token.type().equals(TokenType.While)){
             s= whileStatement();
-        }
-        else if(token.type().equals(TokenType.Put)){
-            s =putStatement();
         }
         else{
             error(token.type());
@@ -166,17 +163,49 @@ public class Parser {
 
         return new Assignment(t,e);  // student exercise
     }
+    private Statement assignmentOrCall(){
+        Variable v = new Variable(match(TokenType.Identifier));
+        Call c = new Call();
 
-    private Put putStatement(){
-        //putStatement --> put( Expression ) ;
-        match(TokenType.Put);
-        match(TokenType.LeftParen);
-        Expression e = expression();
-        match(TokenType.RightParen);
-
-        return new Put(e);
+        if(token.type().equals(TokenType.Assign)){
+            match(TokenType.Assign);
+            Expression src =expression();
+            match(TokenType.Semicolon);
+            return new Assignment(v, src);
+        }
+        else if(token.type().equals(TokenType.LeftParen)){
+            match(TokenType.LeftParen);
+            c.name = v.id();
+            c.args = arguments();
+            match(TokenType.RightParen);
+            match(TokenType.Semicolon);
+            return c;
+        }
+        else{
+            error("error in assignOrCall");
+        }
+        return null;
     }
-  
+
+    private  Expressions arguments(){
+        Expressions args = new Expressions();
+        while(!token.type().equals(TokenType.RightParen)){
+            Expression e = expression();
+            args.add(e);
+
+            if(token.type().equals(TokenType.Comma))
+                match(TokenType.Comma);
+            else if(token.type().equals(TokenType.LeftParen))
+                error("Call Expression Error!");
+        }
+        if (args.size() ==0)
+            return null;
+        else
+            return args;
+    }
+
+
+
     private Conditional ifStatement () {
         // IfStatement --> if (Expression ) Statement [ else Statement ]
         match(TokenType.If);
@@ -282,11 +311,21 @@ public class Parser {
     }
   
     private Expression primary () {
-        // Primary --> Identifier | Literal | ( Expression )
+        // Primary --> Identifier | Literal | ( Expression ) | C
         //             | Type ( Expression )
         Expression e = null;
         if (token.type().equals(TokenType.Identifier)) {
-            e = new Variable(match(TokenType.Identifier));
+            Variable v = new Variable((match(TokenType.Identifier)));
+            e = v ;
+            if(token.type().equals(TokenType.LeftParen)){
+                //call Expression
+                match(TokenType.LeftParen);
+                Call c = new Call();
+                c.name = v.id();
+                c.args = arguments();
+                match(TokenType.RightParen);
+                e= c;
+            }
         } else if (isLiteral()) {
             e = literal();
         } else if (token.type().equals(TokenType.LeftParen)) {
@@ -301,22 +340,6 @@ public class Parser {
             e = new Unary(op, term);
         } else error("Identifier | Literal | ( | Type");
         return e;
-    }
-
-    private Expression getInt(){
-        match(TokenType.getInt);
-        match(TokenType.LeftParen);
-        match(TokenType.RightParen);
-
-        return new GetInt();
-    }
-
-    private Expression getFloat(){
-        match(TokenType.getFloat);
-        match(TokenType.LeftParen);
-        match(TokenType.RightParen);
-
-        return new GetFloat();
     }
 
 

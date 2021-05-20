@@ -61,6 +61,12 @@ public class StaticTypeCheck {
             else if (u.op.floatOp( )) return (Type.FLOAT);
             else if (u.op.charOp( ))  return (Type.CHAR);
         }
+        if (e instanceof Call){
+            Call c = (Call)e;
+            if (c.name.equals("getInt")) return Type.INT;
+            else if(c.name.equals("getFloat")) return Type.FLOAT;
+
+        }
         throw new IllegalArgumentException("should never reach here");
     } 
 
@@ -103,17 +109,40 @@ public class StaticTypeCheck {
             else if(u.op.NegateOp()){
                 check(t==Type.INT || t==Type.FLOAT,"type error :: NegateOp"+u.op);
             }
+            else if(u.op.equals(Operator.FLOAT)){
+                check(t==Type.INT, "non-int operand");
+            }
+            else if(u.op.equals(Operator.INT)){
+                check(t==Type.FLOAT || t==Type.CHAR, "non-float/char operand");
+            }
+            else if(u.op.equals(Operator.CHAR)){
+                check(t==Type.INT, "non-int operand");
+            }
+
             else{
                 throw new IllegalArgumentException("should never reach here");
             }
             return ;
         }
-        else if(e instanceof GetInt){
-            return ;
+        if(e instanceof Call){
+            Call c = (Call)e;
+            if(c.name.equals("getInt") || c.name.equals("getFloat")) return;
+            else if(c.name.equals("put")){
+                if(c.args ==null)
+                    return;
+                else{
+                    for(int i=0; i<c.args.size(); i++){
+                        Expression arg = c.args.get(i);
+                        V(arg,tm);
+                    }
+                }
+            }
+            else{
+                System.out.println("undefined function call" + ((Call) e).args);
+                check(false,"undefined function call");
+            }
         }
-        else if(e instanceof GetFloat){
-            return ;
-        }
+
 
         throw new IllegalArgumentException("should never reach here");
     }
@@ -176,9 +205,9 @@ public class StaticTypeCheck {
             }
 
         }
-        else if (s instanceof Put){
-            Put p =(Put)s;
-            V(p.exp,tm);
+        else if (s instanceof Call){
+            Call c = (Call) s;
+            // Expression에서 이미 체크함.
             return ;
         }
         throw new IllegalArgumentException("should never reach here");
