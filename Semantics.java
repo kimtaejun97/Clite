@@ -31,6 +31,7 @@ public class Semantics {
     }
   
     State M (Assignment a, State state) {
+        //새로 덮어 씌움.
         return state.onion(a.target, M (a.source, state));
     }
   
@@ -48,6 +49,7 @@ public class Semantics {
     }
   
     State M (Loop l, State state) {
+        // 재귀 호출
         if (M (l.test, state).boolValue( ))
             return M(l, M (l.body, state));
         else return state;
@@ -130,8 +132,10 @@ public class Semantics {
     Value M (Expression e, State state) {
         if (e instanceof Value) 
             return (Value)e;
+        //변수에서 값을 꺼내 리턴.
         if (e instanceof Variable) 
             return (Value)(state.get(e));
+        //각 term에 연산 적용하여 리턴
         if (e instanceof Binary) {
             Binary b = (Binary)e;
             return applyBinary (b.op, 

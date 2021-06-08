@@ -62,6 +62,8 @@ public class TypeTransformer {
             Expression src = T (a.source, tm);
             Type ttype = (Type)tm.get(a.target);
             Type srctype = StaticTypeCheck.typeOf(a.source, tm);
+
+            //형변환
             if (ttype == Type.FLOAT) {
                 if (srctype == Type.INT) {
                     src = new Unary(new Operator(Operator.I2F), src);

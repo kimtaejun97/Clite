@@ -23,6 +23,7 @@ public class StaticTypeCheck {
     }
 
     public static void V (Declarations d) {
+        // 모든 선언의 이름은 중복되지 않아야 함.
         for (int i=0; i<d.size() - 1; i++)
             for (int j=i+1; j<d.size(); j++) {
                 Declaration di = d.get(i);
@@ -41,6 +42,7 @@ public class StaticTypeCheck {
         if (e instanceof Value) return ((Value)e).type;
         if (e instanceof Variable) {
             Variable v = (Variable)e;
+
             check (tm.containsKey(v), "undefined variable: " + v);
             return (Type) tm.get(v);
         }
@@ -71,8 +73,11 @@ public class StaticTypeCheck {
     } 
 
     public static void V (Expression e, TypeMap tm) {
+        // 모든 value는 유효.
         if (e instanceof Value) 
             return;
+
+        //TypeMap에 존재하는지 검사. 즉 변수가 선언되어 있는지.
         if (e instanceof Variable) { 
             Variable v = (Variable)e;
             check( tm.containsKey(v)
@@ -83,15 +88,21 @@ public class StaticTypeCheck {
             Binary b = (Binary) e;
             Type typ1 = typeOf(b.term1, tm);
             Type typ2 = typeOf(b.term2, tm);
+            // 각 term이 유효한지.
             V (b.term1, tm);
             V (b.term2, tm);
+
+            //term의 타입 검사
+            // 산술 : 두 term의 타입이 동일하고 int,float인지
             if (b.op.ArithmeticOp( ))  
                 check( typ1 == typ2 &&
                        (typ1 == Type.INT || typ1 == Type.FLOAT)
                        , "type error for " + b.op);
+            //관계 : 두 term의 타입이 동일.
             else if (b.op.RelationalOp( )) 
                 check( typ1 == typ2 , "type error for " + b.op);
-            else if (b.op.BooleanOp( )) 
+            //boolean : 두 term의 타입 모두 bool
+            else if (b.op.BooleanOp( ))
                 check( typ1 == Type.BOOL && typ2 == Type.BOOL,
                        b.op + ": non-bool operand");
             else
@@ -102,10 +113,14 @@ public class StaticTypeCheck {
         else if(e instanceof Unary){
             Unary u = (Unary)e;
             Type t =  typeOf(u.term, tm);
+            //term이 유효한지.
             V(u.term, tm);
+
             if(u.op.NotOp()){
                 check(t ==Type.BOOL, "type error :: NotOp "+u.op);
             }
+
+            //형변환.
             else if(u.op.NegateOp()){
                 check(t==Type.INT || t==Type.FLOAT,"type error :: NegateOp"+u.op);
             }
@@ -130,6 +145,7 @@ public class StaticTypeCheck {
             else if(c.name.equals("put")){
                 if(c.args ==null)
                     return;
+                // args 유효성 검사.
                 else{
                     for(int i=0; i<c.args.size(); i++){
                         Expression arg = c.args.get(i);
@@ -147,17 +163,23 @@ public class StaticTypeCheck {
         throw new IllegalArgumentException("should never reach here");
     }
 
+    // 문장의 유효
     public static void V (Statement s, TypeMap tm) {
         if ( s == null )
             throw new IllegalArgumentException( "AST error: null statement");
+        //skip문은 항상 유효.
         if (s instanceof Skip) return;
         if (s instanceof Assignment) {
             Assignment a = (Assignment)s;
+            //target이 선언되어 있어야 함.
             check( tm.containsKey(a.target)
                    , " undefined target in assignment: " + a.target);
+            //source가 유효.
             V(a.source, tm);
             Type ttype = (Type)tm.get(a.target);
             Type srctype = typeOf(a.source, tm);
+
+            //타입이 같지 않을 때 캐스팅 가능한지 검사.
             if (ttype != srctype) {
                 if (ttype == Type.FLOAT)
                     check( srctype == Type.INT
@@ -174,8 +196,10 @@ public class StaticTypeCheck {
         // student exercise IF,LOOP, BLOCK
         else if(s instanceof Conditional){
             Conditional c = (Conditional) s;
+            //test식이 유효한지.
             V(c.test,tm);
             Type tType = typeOf(c.test, tm);
+            //test의 반환이 bool 타입인지
             if(tType == Type.BOOL){
                 V(c.thenbranch, tm);
                 V(c.elsebranch, tm);
@@ -199,6 +223,7 @@ public class StaticTypeCheck {
         }
         else if(s instanceof Block){
             Block b = (Block) s;
+            // Block안의 모든 문장이 유효한지.
             for(Statement si : b.members){
                 V(si, tm);
                 return ;
